@@ -23,4 +23,8 @@ Route::get('post/updatePage/{id}',[PostController::class,'updatePage'])->name('p
 Route::get('post/editPage/{id}',[PostController::class,'editPage'])->name('post#edit');
 Route::post('post/edit',[PostController::class,'postEdit'])->name('post#editData');
 
+Route::get('/home/{name?}',function($name='John'){
+    return $name;
+});
+
 
