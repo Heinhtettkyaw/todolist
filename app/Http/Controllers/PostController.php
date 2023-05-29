@@ -11,14 +11,22 @@ class PostController extends Controller
 {
     //
     public function create(){
-        // $posts=Post::all()->toArray();
-        $posts=Post::orderBy('created_at','desc')->paginate(3);
+    //     $posts=Post::all()->toArray();
+    //   $posts=Post::orderBy('created_at','asc')->paginate(3);
+
+        $posts=Post::when(request('searchKey'),function($q){
+            $key=request('searchKey');
+            $q->where('title','like','%'.$key.'%');
+
+        })->orderBy('created_at','desc')->paginate(3);
+
+
         return view('create',compact('posts'));
     }
 
     //post create
     public function postCreate(Request $request){
-        $this->postValidationCheck($request);
+        $this->postValidationCheck($request,"create");
        $response= $this->getPostData($request);
        Post::create($response);
     // return back();
@@ -40,6 +48,7 @@ class PostController extends Controller
     public function updatePage($id){
        $post= Post::where('id',$id)->get()->toArray();
 
+
         return view('update',compact('post'));
     }
 
@@ -52,7 +61,7 @@ class PostController extends Controller
 
     //EditData
     public function postEdit(Request $request){
-        $this->postValidationCheck($request);
+        $this->postValidationCheck($request,"update");
         $response= $this->getPostData($request);
         $id=$request->postId;
 
@@ -69,11 +78,20 @@ class PostController extends Controller
         return $data;
     }
 
-    private function postValidationCheck($request){
+    private function postValidationCheck($request,$status){
+       if($status=='create'){
         $validationRules=[
             'postTitle'=>'required | unique:posts,title',
             'postDescription'=>'required'
         ];
+
+       }elseif($status=='update'){
+        $validationRules=[
+            'postTitle'=>'required | unique:posts,title,'.$request->postId,
+            'postDescription'=>'required'
+        ];
+       }
+
         $validationMessage=[
             'postTitle.required'=>'ခေါင်းစဥ် ထည့်သွင်းရန် လိုအပ်ပါသည်',
             'postDescription.required'=>'အကြောင်းအရာ ထည့်သွင်းရန် လိုအပ်ပါသည်',
